@@ -74,7 +74,7 @@ def get_booking(booking_id: int,db: Session = Depends(get_db),):
     return book
 
 @app.put(
-    "/api/bookings/{booking_id}",response_model=BookingRead,summary="Update an existing booking (full replace)",)
+    "/api/bookings/{booking_id}",response_model=BookingRead,summary="Update an existing booking",)
 def update_booking(booking_id: int,payload: BookingCreate,db: Session = Depends(get_db),):
     book = db.get(BookingDB, booking_id)
     if not book:
