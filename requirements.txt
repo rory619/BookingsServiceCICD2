@@ -4,7 +4,7 @@ certifi==2025.8.3
 click==8.2.1
 colorama==0.4.6
 coverage==7.10.7
-aio_pika
+aio-pika==9.5.8
 dnspython==2.8.0
 email-validator==2.3.0
 fastapi==0.116.1
