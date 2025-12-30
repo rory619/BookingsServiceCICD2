@@ -14,6 +14,7 @@ from app.models import BookingDB
 from app.schemas import ( BookingCreate, BookingRead ) 
 import httpx, os
 import json
+import aio_pika
 
 #Replacing @app.on_event("startup")
 @asynccontextmanager
