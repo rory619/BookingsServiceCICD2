@@ -15,6 +15,8 @@ from app.schemas import ( BookingCreate, BookingRead )
 import httpx, os
 import json
 import aio_pika
+import logging
+import pybreaker
 
 #Replacing @app.on_event("startup")
 @asynccontextmanager
@@ -23,11 +25,44 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Service B - Proxy API")
-SERVICE_A_BASE_URL = os.getenv("SERVICE_A_BASE_URL", "http://localhost:8001")
+SERVICE_A_BASE_URL = os.getenv("SERVICE_A_BASE_URL", "http://users:8000")
 EXCHANGE_NAME = "events_topic"
 RABBIT_URL = os.getenv("RABBIT_URL")
 
+logger = logging.getLogger("bookings")
+logging.basicConfig(level=logging.INFO)
 
+#  opens after 3 failures tries again after 30s
+USERS_CB = pybreaker.CircuitBreaker(fail_max=3, reset_timeout=30)
+
+USERS_TIMEOUT = float(os.getenv("USERS_TIMEOUT", "2.0"))
+
+@USERS_CB
+def users_service_user_exists(user_id: int) -> bool:
+
+    url = f"{SERVICE_A_BASE_URL}/api/users/{user_id}"
+
+    with httpx.Client(timeout=USERS_TIMEOUT) as client:
+        r = client.get(url)
+
+    if r.status_code == 404:
+        return False
+
+    r.raise_for_status()
+    return True
+
+
+def check_user_with_circuit_breaker(user_id: int) -> tuple[bool | None, str]:
+    try:
+        return users_service_user_exists(user_id), "checked"
+
+    except pybreaker.CircuitBreakerError:
+        logger.warning("Users circuit breaker OPEN  skipping user check")
+        return None, "skipped_circuit_open"
+
+    except Exception as e:
+        logger.warning(f"Users check failed  using fallback, error={type(e).__name__}")
+        return None, "skipped_users_down"
 
 
 
@@ -113,13 +148,26 @@ async def payment_success(payment: dict):
     return {"event": "payment.success", "payment": payment}
  
 #Bookings
-@app.post("/api/bookings", response_model=BookingRead, status_code=201, summary="Create new booking") 
-def create_booking(payload: BookingCreate, db: Session = Depends(get_db)): 
-    db_book = BookingDB(**payload.model_dump()) 
-    db.add(db_book) 
-    commit_or_rollback(db, "Booking create failed") 
-    db.refresh(db_book) 
-    return db_book 
+@app.post("/api/bookings", response_model=BookingRead, status_code=201, summary="Create new booking")
+def create_booking(payload: BookingCreate, db: Session = Depends(get_db)):
+    exists, note = check_user_with_circuit_breaker(payload.user_id)
+    #  404
+    if exists is False:
+        raise HTTPException(status_code=404, detail="User not found (validated via Users service)")
+    booking_status = payload.status
+    if exists is None:
+        booking_status = "pending_user_check"
+
+    db_book = BookingDB(
+        user_id=payload.user_id,
+        course_id=payload.course_id,
+        status=booking_status,
+    )
+
+    db.add(db_book)
+    commit_or_rollback(db, "Booking create failed")
+    db.refresh(db_book)
+    return db_book
  
 @app.get("/api/bookings", response_model=list[BookingRead]) 
 def list_bookings(limit: int = 10, offset: int = 0, db: Session = Depends(get_db)): 
