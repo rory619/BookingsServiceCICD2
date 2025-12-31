@@ -30,7 +30,7 @@ EXCHANGE_NAME = "events_topic"
 RABBIT_URL = os.getenv("RABBIT_URL")
 
 logger = logging.getLogger("bookings")
-logging.basicConfig(level=logging.INFO, force=TRUE)
+logging.basicConfig(level=logging.INFO, force=True)
 
 #  opens after 3 failures tries again after 30s
 USERS_CB = pybreaker.CircuitBreaker(fail_max=3, reset_timeout=30)
