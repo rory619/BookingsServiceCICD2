@@ -1,15 +1,12 @@
-import os, time
+import os
+import time
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import OperationalError
 
-# Pick env file by APP_ENV (default dev)
-envfile = {
-    "dev": ".env.dev",
-    "docker": ".env.docker",
-    "test": ".env.test",
-}.get(os.getenv("APP_ENV", "dev"), ".env.dev")
+#  (default dev)
+envfile = {"dev": ".env.dev","docker": ".env.docker","test": ".env.test",}.get(os.getenv("APP_ENV", "dev"), ".env.dev")
 load_dotenv(envfile, override=True)
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./app.db")
@@ -22,24 +19,15 @@ connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite")
 
 for _ in range(RETRIES):
     try:
-        engine = create_engine(
-            DATABASE_URL,
-            pool_pre_ping=True,
-            echo=SQL_ECHO,
-            connect_args=connect_args,
-        )
-        with engine.connect(): # smoke test
+        engine = create_engine(DATABASE_URL,pool_pre_ping=True,echo=SQL_ECHO,connect_args=connect_args,)
+        with engine.connect():  # smoke test
             pass
         break
     except OperationalError:
         time.sleep(DELAY)
 
-SessionLocal = sessionmaker(
-    bind=engine,
-    autocommit=False,
-    autoflush=False,
-    expire_on_commit=False,
-)
+SessionLocal = sessionmaker(bind=engine,autocommit=False,autoflush=False,expire_on_commit=False,)
+
 
 def get_db():
     db = SessionLocal()

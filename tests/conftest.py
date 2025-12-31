@@ -4,26 +4,26 @@ from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from app.main import app, get_db   # import get_db from main
+from app.main import app, get_db  # import get_db from main
 from app.models import Base
 
-engine = create_engine(
-    "sqlite+pysqlite:///:memory:",
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
+engine = create_engine("sqlite+pysqlite:///:memory:",connect_args={"check_same_thread": False},poolclass=StaticPool,)
+
 
 @event.listens_for(engine, "connect")
 def _fk_on(dbapi_conn, _):
     dbapi_conn.execute("PRAGMA foreign_keys=ON")
 
+
 TestingSessionLocal = sessionmaker(bind=engine, expire_on_commit=False)
+
 
 @pytest.fixture(autouse=True)
 def _schema():
     Base.metadata.create_all(bind=engine)
     yield
     Base.metadata.drop_all(bind=engine)
+
 
 @pytest.fixture
 def client():
