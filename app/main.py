@@ -8,11 +8,11 @@ from fastapi import Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session 
 from sqlalchemy import select 
 from sqlalchemy.exc import IntegrityError 
-from sqlalchemy.orm import selectinload 
 from app.database import SessionLocal 
 from app.models import BookingDB
 from app.schemas import ( BookingCreate, BookingRead ) 
-import httpx, os
+import httpx
+import os
 import json
 import aio_pika
 import logging

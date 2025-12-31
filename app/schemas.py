@@ -1,6 +1,6 @@
-from typing import Annotated, Optional, List 
-from annotated_types import Ge, Le             
-from pydantic import BaseModel,ConfigDict, StringConstraints 
+from typing import Annotated
+from annotated_types import Ge
+from pydantic import BaseModel, ConfigDict, StringConstraints
  
 # ---------- Reusable type aliases ---------- 
 StatusStr = Annotated[str, StringConstraints(min_length=1, max_length=100)] 
