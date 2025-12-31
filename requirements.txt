@@ -22,7 +22,7 @@ pluggy==1.6.0
 psycopg2-binary==2.9.10
 psycopg[binary]
 pycodestyle==2.14.0
-pybreaker
+pybreaker==1.4.1
 pydantic==2.11.7
 pydantic_core==2.33.2
 pyflakes==3.4.0
@@ -30,6 +30,7 @@ Pygments==2.19.2
 pytest==8.4.2
 pytest-cov==7.0.0
 python-dotenv==1.1.1
+ruff==0.14.10
 sniffio==1.3.1
 SQLAlchemy==2.0.43
 starlette==0.47.3
