@@ -164,7 +164,7 @@ def test_publish_order(client):
     assert r.json()["status"] == "Message sent"
 #Verify RabbitMQ publish here without broker connection to test publishing flow
 
-def test_order_created_event(client):
+def test_order_created_event(client): #testing porder create event without using RabbitMQ, verifies if corrrect event name has been used
     fake_conn = MagicMock()
     fake_conn.channel = AsyncMock()
     fake_conn.close = AsyncMock()
@@ -192,7 +192,7 @@ def test_order_created_event(client):
     assert r.json()["event"] == "order.created"
 
 
-def test_payment_success_event(client):
+def test_payment_success_event(client): #Testing payment/success withoutRabbitMQ needing to be running, confirms payment.success is returns 
     fake_conn = MagicMock()
     fake_conn.channel = AsyncMock()
     fake_conn.close = AsyncMock()
