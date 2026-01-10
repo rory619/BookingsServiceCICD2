@@ -1,6 +1,6 @@
 from unittest.mock import AsyncMock, MagicMock, patch
 
-
+#create booking and force users service validation to work
 def create_booking_ok(client, payload=None):
     payload = payload or {"user_id": 1, "course_id": 10, "status": "confirmed"}
     with patch(
@@ -22,7 +22,7 @@ def test_health(client):
 def test_create_booking(client):
     data = create_booking_ok(client)
     assert "id" in data
-
+#Returns an ID when works
 
 def test_create_booking_user_not_found(client):
     with patch(
@@ -49,7 +49,7 @@ def test_create_booking_users_down_sets_pending(client):
 
     assert r.status_code == 201
     assert r.json()["status"] == "pending_user_check"
-
+#If users isnt available create it but mark as pending
 
 def test_list_bookings(client):
     create_booking_ok(client)
@@ -88,7 +88,7 @@ def test_update_booking(client):
 
     assert r.status_code == 200
     assert r.json()["id"] == booking_id
-
+#User validation is mocked so not relying on userService
 
 def test_update_booking_404(client):
     with patch(
@@ -99,7 +99,7 @@ def test_update_booking_404(client):
             "/api/bookings/999999",
             json={"user_id": 1, "course_id": 10, "status": "cancelled"},
         )
-
+#Creating missing booking return error 404
     assert r.status_code == 404
 
 
@@ -136,7 +136,7 @@ def test_proxy_greet(client):
 
     assert r.status_code == 200
     assert r.json()["service_b"] is True
-
+#create a fake context manager so it doesnt call network when testing endpoints
 
 def test_publish_order(client):
     fake_conn = MagicMock()
@@ -162,7 +162,7 @@ def test_publish_order(client):
 
     assert r.status_code == 200
     assert r.json()["status"] == "Message sent"
-
+#Verify RabbitMQ publish here without broker connection to test publishing flow
 
 def test_order_created_event(client):
     fake_conn = MagicMock()
